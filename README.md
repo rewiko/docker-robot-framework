@@ -1,10 +1,10 @@
-# Robot Framework in Docker Alpine, with Firefox and Chrome
+# Robot Framework in Docker Alpine
+
+## Project initially created by [ppodgorsek](https://github.com/ppodgorsek)
 
 ## What is it?
 
 This project consists of a Docker image containing a Robot Framework installation.
-
-This installation also contains Firefox, Chrome and the Selenium library for Robot Framework. The test cases and reports should be mounted as volumes.
 
 ## Versioning
 
@@ -16,23 +16,11 @@ The versioning of this image follows the one of Robot Framework:
 The versions used are:
 
 * [Robot Framework](https://github.com/robotframework/robotframework) 4.1
-* [Robot Framework Browser Library](https://github.com/MarketSquare/robotframework-browser) 6.0.0
-* [Robot Framework DatabaseLibrary](https://github.com/franz-see/Robotframework-Database-Library) 1.2.4
-* [Robot Framework Datadriver](https://github.com/Snooz82/robotframework-datadriver) 1.4.1
 * [Robot Framework DateTimeTZ](https://github.com/testautomation/DateTimeTZ) 1.0.6
 * [Robot Framework Faker](https://github.com/guykisel/robotframework-faker) 5.0.0
-* [Robot Framework FTPLibrary](https://github.com/kowalpy/Robot-Framework-FTP-Library) 1.9
-* [Robot Framework IMAPLibrary 2](https://pypi.org/project/robotframework-imaplibrary2/) 0.4.0
 * [Robot Framework Pabot](https://github.com/mkorpela/pabot) 2.0.1
 * [Robot Framework Requests](https://github.com/bulkan/robotframework-requests) 0.9.1
-* [Robot Framework SeleniumLibrary](https://github.com/robotframework/SeleniumLibrary) 5.1.3
-* [Robot Framework SSHLibrary](https://github.com/robotframework/SSHLibrary) 3.7.0
-* [Axe Selenium Library](https://github.com/mozilla-services/axe-selenium-python) 2.1.6
-* Firefox ESR 78
-* Chromium 86.0
 * [Amazon AWS CLI](https://pypi.org/project/awscli/) 1.20.6
-
-As stated by [the official GitHub project](https://github.com/robotframework/Selenium2Library), starting from version 3.0, Selenium2Library is renamed to SeleniumLibrary and this project exists mainly to help with transitioning. The Selenium2Library 3.0.0 is also the last release and for new releases, please look at the [SeleniumLibrary](https://github.com/robotframework/SeleniumLibrary) project.
 
 ## Running the container
 
@@ -41,21 +29,7 @@ This container can be run using the following command:
     docker run \
         -v <local path to the reports' folder>:/opt/robotframework/reports:Z \
         -v <local path to the test suites' folder>:/opt/robotframework/tests:Z \
-        ppodgorsek/robot-framework:<version>
-
-### Switching browsers
-
-Browsers can be easily switched. It is recommended to define `${BROWSER} %{BROWSER}` in your Robot variables and to use `${BROWSER}` in your test cases. This allows to set the browser in a single place if needed.
-
-When running your tests, simply add `-e BROWSER=chrome` or `-e BROWSER=firefox` to the run command.
-
-### Changing the container's screen resolution
-
-It is possible to define the settings of the virtual screen in which the browser is run by changing several environment variables:
-
-* `SCREEN_COLOUR_DEPTH` (default: 24)
-* `SCREEN_HEIGHT` (default: 1080)
-* `SCREEN_WIDTH` (default: 1920)
+        rewiko/robot-framework:<version>
 
 ### Changing the container's tests and reports directories
 
@@ -70,7 +44,7 @@ It is possible to parallelise the execution of your test suites. Simply define t
 
     docker run \
         -e ROBOT_THREADS=4 \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 By default, there is no parallelisation.
 
@@ -81,7 +55,7 @@ When using parallelisation, it is possible to pass additional [pabot options](ht
     docker run \
         -e ROBOT_THREADS=4 \
         -e PABOT_OPTIONS="--testlevelsplit" \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 ### Passing additional options
 
@@ -89,13 +63,7 @@ RobotFramework supports many options such as `--exclude`, `--variable`, `--logle
 
     docker run \
         -e ROBOT_OPTIONS="--loglevel DEBUG" \
-        ppodgorsek/robot-framework:latest
-
-### Testing emails
-
-This project includes the IMAP library which allows Robot Framework to connect to email servers.
-
-A suggestion to automate email testing is to run a [Mailcatcher instance in Docker which allows IMAP connections](https://github.com/estelora/docker-mailcatcher-imap). This will ensure emails are discarded once the tests have been run.
+        rewiko/robot-framework:latest
 
 ### Dealing with Datetimes and Timezones
 
@@ -105,7 +73,7 @@ To set the timezone used inside the Docker image, you can set the `TZ` environme
 
     docker run \
         -e TZ=America/New_York \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 ## Security consideration
 
@@ -113,7 +81,7 @@ By default, containers are implicitly run using `--user=1000:1000`, please remem
 
     docker run \
         --user=1001:1001 \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 Remember that that UID/GID should be allowed to access the mounted volumes in order to read the test suites and to write the output.
 
@@ -133,7 +101,7 @@ It is possible to run the project from within a Jenkins pipeline by relying on t
         stages {
             stage('Functional regression tests') {
                 steps {
-                    sh "docker run --shm-size=1g -e BROWSER=firefox -v $WORKSPACE/robot-tests:/opt/robotframework/tests:Z -v $WORKSPACE/robot-reports:/opt/robotframework/reports:Z ppodgorsek/robot-framework:latest"
+                    sh "docker run --shm-size=1g -v $WORKSPACE/robot-tests:/opt/robotframework/tests:Z -v $WORKSPACE/robot-reports:/opt/robotframework/reports:Z rewiko/robot-framework:latest"
                 }
             }
         }
@@ -146,11 +114,10 @@ The pipeline stage can also rely on a Docker agent, as shown in the example belo
         stages {
             stage('Functional regression tests') {
                 agent { docker {
-                    image 'ppodgorsek/robot-framework:latest'
+                    image 'rewiko/robot-framework:latest'
                     args '--shm-size=1g -u root' }
                 }
                 environment {
-                    BROWSER = 'firefox'
                     ROBOT_TESTS_DIR = "$WORKSPACE/robot-tests"
                     ROBOT_REPORTS_DIR = "$WORKSPACE/robot-reports"
                 }
@@ -175,7 +142,7 @@ It can simply be passed during the execution, such as:
 
     docker run \
         -e ROBOT_TEST_RUN_ID="feature/branch-name" \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 By default, the test run ID is empty.
 
@@ -188,54 +155,19 @@ To upload the report of a test run to an S3 bucket, you need to define the follo
         -e AWS_SECRET_ACCESS_KEY=<your AWS secret> \
         -e AWS_DEFAULT_REGION=<your AWS region e.g. eu-central-1> \
         -e AWS_BUCKET_NAME=<name of your S3 bucket> \
-        ppodgorsek/robot-framework:latest
+        rewiko/robot-framework:latest
 
 ## Testing this project
 
 Not convinced yet? Simple tests have been prepared in the `test/` folder, you can run them using the following commands:
 
-    # Using Chromium
-    docker run \
-        -v `pwd`/reports:/opt/robotframework/reports:Z \
-        -v `pwd`/test:/opt/robotframework/tests:Z \
-        -e BROWSER=chrome \
-        ppodgorsek/robot-framework:latest
-
-    # Using Firefox
-    docker run \
-        -v `pwd`/reports:/opt/robotframework/reports:Z \
-        -v `pwd`/test:/opt/robotframework/tests:Z \
-        -e BROWSER=firefox \
-        ppodgorsek/robot-framework:latest
-
-For Windows users who use **PowerShell**, the commands are slightly different:
-
-    # Using Chromium
-    docker run \
-        -v ${PWD}/reports:/opt/robotframework/reports:Z \
-        -v ${PWD}/test:/opt/robotframework/tests:Z \
-        -e BROWSER=chrome \
-        ppodgorsek/robot-framework:latest
-
-    # Using Firefox
-    docker run \
-        -v ${PWD}/reports:/opt/robotframework/reports:Z \
-        -v ${PWD}/test:/opt/robotframework/tests:Z \
-        -e BROWSER=firefox \
-        ppodgorsek/robot-framework:latest
+```
+docker-compose up
+```
 
 Screenshots of the results will be available in the `reports/` folder.
 
 ## Troubleshooting
-
-### Chromium is crashing
-
-Chrome drivers might crash due to the small size of `/dev/shm` in the docker container:
-> UnknownError: session deleted because of page crash
-
-This is [a known bug of Chromium](https://bugs.chromium.org/p/chromium/issues/detail?id=715363).
-
-To avoid this error, please change the shm size when starting the container by adding the following parameter: `--shm-size=1g` (or any other size more suited to your tests)
 
 ### Accessing the logs
 
@@ -243,11 +175,6 @@ In case further investigation is required, the logs can be accessed by mounting 
 
 * Linux/Mac: ``-v `pwd`/logs:/var/log:Z``
 * Windows: ``-v ${PWD}/logs:/var/log:Z``
-
-Chromium allows to set additional environment properties, which can be useful when debugging:
-
-* `webdriver.chrome.verboseLogging=true`: enables the verbose logging mode
-* `webdriver.chrome.logfile=/path/to/chromedriver.log`: sets the path to Chromium's log file
 
 ### Error: Suite contains no tests
 
@@ -267,16 +194,6 @@ It is also important to check if Robot Framework is allowed to access the resour
 * The folder where the tests are located,
 * The test files themselves.
 
-### Database tests are failing in spite of the DatabaseLibrary being present
-
-As per their official project page, the [Robot Framework DatabaseLibrary](https://github.com/franz-see/Robotframework-Database-Library) contains utilities meant for Robot Framework's usage. This can allow you to query your database after an action has been made to verify the results. This is compatible with any Database API Specification 2.0 module.
-
-It is anyway mandatory to extend the container image to install the specific database module relevant to your tests, such as:
-* [MS SQL](https://pymssql.readthedocs.io/en/latest/intro.html): `pip install pymssql`
-* [MySQL](https://dev.mysql.com/downloads/connector/python/): `pip install pymysql`
-* [Oracle](https://www.oracle.com/uk/database/technologies/appdev/python.html): `pip install py2oracle`
-* [PostgreSQL](http://pybrary.net/pg8000/index.html): `pip install pg8000`
-
 ## Please contribute!
 
-Have you found an issue? Do you have an idea for an improvement? Feel free to contribute by submitting it [on the GitHub project](https://github.com/ppodgorsek/docker-robot-framework/issues).
+Have you found an issue? Do you have an idea for an improvement? Feel free to contribute by submitting it [on the GitHub project](https://github.com/rewiko/docker-robot-framework/issues).

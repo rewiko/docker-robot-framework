@@ -22,16 +22,12 @@ mkdir -p ${ROBOT_REPORTS_FINAL_DIR}
 # No need for the overhead of Pabot if no parallelisation is required
 if [ $ROBOT_THREADS -eq 1 ]
 then
-    xvfb-run \
-        --server-args="-screen 0 ${SCREEN_WIDTH}x${SCREEN_HEIGHT}x${SCREEN_COLOUR_DEPTH} -ac" \
-        robot \
+    robot \
         --outputDir $ROBOT_REPORTS_FINAL_DIR \
         ${ROBOT_OPTIONS} \
         $ROBOT_TESTS_DIR
 else
-    xvfb-run \
-        --server-args="-screen 0 ${SCREEN_WIDTH}x${SCREEN_HEIGHT}x${SCREEN_COLOUR_DEPTH} -ac" \
-        pabot \
+    pabot \
         --verbose \
         --processes $ROBOT_THREADS \
         ${PABOT_OPTIONS} \
