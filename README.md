@@ -2,6 +2,9 @@
 
 ## Project initially created by [ppodgorsek](https://github.com/ppodgorsek)
 
+Code source avialable [here](https://github.com/ppodgorsek/docker-robot-framework).
+
+I have just removed the browser library and to make it lighter, I will update it with use cases to test AWS and kubernetes resources.
 ## What is it?
 
 This project consists of a Docker image containing a Robot Framework installation.
